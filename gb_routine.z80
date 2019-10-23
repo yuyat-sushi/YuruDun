@@ -55,6 +55,9 @@ Initialize:								;初期スタックポインタ = $FFFE
 	ld			a,167
 	ldh			[rWX],a					;Window X 非表示
 
+	ld			a,$E4
+	ldh			[rBGP],a
+
 	xor			a
 	ldh			[rNR52],a				;音源制御
 

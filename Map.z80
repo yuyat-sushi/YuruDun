@@ -1,0 +1,126 @@
+;最初にマップデータをロードするとき
+MapLoad:
+        ;マップデータをBGデータに変換する
+	AdressLD	MapAwake, _SceneAdress
+        ret 
+
+;マップ画面になったとき
+MapAwake:
+        ;VRAM操作するため、スクリーンをオフに
+        call    ScreenOff
+        ;グラフィックをロード
+        ld      bc, 56*16
+        ld      de, _VRAM + $1000
+        ld      hl, _MapBGTile
+        call    LDIR
+        ;マップデータをBGに
+        ld      de,_MapData1
+        call    __SetMapData
+        ;描画処理終了
+        call    ScreenOnVB
+	AdressLD	MapUpdate, _SceneAdress
+        ret
+
+;マップ画面で毎フレーム行うこと
+MapUpdate:
+
+        ret
+
+MapVblack:
+
+        ret
+
+
+
+;----------------------------------------------------------------------------
+;通常マップ定義
+;bc = 幅・高さ
+;de = 読み込み元アドレス
+;hl = 定義先アドレス
+;----------------------------------------------------------------------------
+__SetTileMap:
+	push	bc	;幅と高さを記憶
+
+.loop:
+	ld	a,[de]	;書き込み処理
+	inc	de
+	ld	[hl+],a
+	dec	b
+	jr	nz,.loop
+
+	ld	a,c	;幅のリセット
+	pop	bc	
+	ld	c,a
+	push	bc
+	
+	ld	a,b	;b = 32の時の２重ループ防止
+	cp	a,32
+	jr	z,.skip
+	
+	ld	a,l	;32バイト分進める
+	sub	a,b	;32 - 横幅
+	add	a,32
+	ld	l,a
+	ld	a,h
+	adc	a,0
+	ld	h,a
+	
+.skip:
+	dec	c
+	jr	nz,.loop
+
+	pop	bc
+	ret
+
+;マップ定義
+;de = 読み込み先マップデータ
+__SetMapData
+        ld bc, $0A08    ;幅10,高さ8
+        ld hl, _SCRN0
+
+.loop:
+	ld	a,[de]	;書き込み処理
+        add     a,a     ;マップ番号*4+32
+        add     a,a
+        add     a,$20
+	ld	[hl+],a
+        inc     a
+        ld      [hl+],a
+        inc     a
+
+        push    af
+        ld	a,l	;1列先に配置する
+	add	a,30
+	ld	l,a
+	ld	a,h
+	adc	a,0
+	ld	h,a
+        pop     af
+
+	ld	[hl+],a
+        inc     a
+        ld      [hl+],a
+
+        ld	a,l	;1列の後ろに配置する
+	sub	a,32
+	ld	l,a
+	ld	a,h
+	sbc	a,0
+	ld	h,a
+
+	inc	de
+	dec	b
+	jr	nz,.loop
+
+        ld      b, $0A
+
+	ld	a,l	;2列先の一番初めに配置する
+	add	a,44
+	ld	l,a
+	ld	a,h
+	adc	a,0
+	ld	h,a
+	
+	dec	c
+	jr	nz,.loop
+        ret
