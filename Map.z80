@@ -5,6 +5,10 @@ MapLoad:
         ld      de, m_MapData
         ld      hl, _MapData1
         call    LDIR
+	;敵の配置
+	call	__SetEnemy
+	;プレイヤーの配置
+	call	__SetPlayer
 	AdressLD	MapAwake, _SceneAdress
         ret 
 
@@ -45,7 +49,7 @@ MapAwake:
 
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
-	
+	call __DrawEnemySprite
         ret
 
 MapVblack:
@@ -146,3 +150,179 @@ __SetMapData
 	dec	c
 	jr	nz,.loop
         ret
+
+
+;------------------------------------------------
+;敵の配置
+;------------------------------------------------
+__SetEnemy:
+	ld	bc,$0A08	;幅10高さ8
+	ld	de,m_MapData	;マップデータ書き込み
+.loop:
+	ld	a,[de]
+	cp	6
+	jr	nz,.skip	;マップデータが6(enemy)でない場合、スキップ
+
+	ld	hl,m_EnemyX	;X座標指定
+	ld	a,[m_EnemyCount]
+	add	a,l
+	ld	l,a
+	ld	a,10		;10-b
+	sub	a,b
+	ld	[hl],a	
+
+	ld	hl,m_EnemyY	;Y座標指定
+	ld	a,[m_EnemyCount]
+	add	a,l
+	ld	l,a
+	ld	a,8		;8-c
+	sub	a,c
+	ld	[hl],a
+
+	ld	hl,m_EnemyType	;タイプ指定
+	ld	a,[m_EnemyCount]
+	add	a,l
+	ld	l,a
+	ld	a,1
+	ld	[hl],a
+
+	ld	a,[m_EnemyCount];敵の数を上昇
+	inc	a
+	ld	[m_EnemyCount],a
+
+	ld	a,2		;6(enemy)を2(floor)に変換
+	ld	[de],a
+
+.skip:
+	inc	de
+	dec	b
+	jr	nz,.loop
+	ld	b,$0A
+	dec	c
+	jr	nz,.loop
+	ret
+
+;------------------------------------------------
+;プレイヤーの配置
+;------------------------------------------------
+__SetPlayer:
+	ld	bc,$0A08	;幅10高さ8
+	ld	de,m_MapData	;マップデータ書き込み
+.loop:
+	ld	a,[de]
+	cp	7
+	jr	nz,.skip	;マップデータが6(enemy)でない場合、スキップ
+
+	ld	hl,m_PlayerX	;X座標指定
+	ld	a,10		;10-b
+	sub	a,b
+	ld	[hl],a
+
+	ld	hl,m_PlayerY	;Y座標指定
+	ld	a,8		;8-c
+	sub	a,c
+	ld	[hl],a
+
+	ld	a,2		;7(player)を2(floor)に変換
+	ld	[de],a
+
+	jr	.end		;playerは一つだけなので、一つ設置出来た場合.endへ
+
+.skip:
+	inc	de
+	dec	b
+	jr	nz,.loop
+	ld	b,$0A
+	dec	c
+	jr	nz,.loop
+.end:
+	ret
+
+;------------------------------------------------
+;敵キャラクターの描画
+;------------------------------------------------
+__DrawEnemySprite:
+	ld	a,[m_EnemyCount]
+	ld	b,4
+	ld	hl,OAM_BUFFER0 + 16
+.loop:
+	ld	a,[m_EnemyType]
+	cp	0
+	jr	z,.blank		;EnemyTypeが0(何もない)の場合、ブランク化処理へ
+	;敵キャラクターが存在する場合
+	ld	c,4
+.eloop:
+	;Y座標
+	ld	de,m_EnemyY		;書き込み元アドレスを指定
+	ld	a,e
+	add	a,4
+	sub	a,b
+	ld	e,a
+
+	ld	a,[de]
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,16
+
+	ld	d,a			;書き込み元を読み込んだ時点でdeは用済みとなる
+	ld	a,4
+	sub	a,c
+	and	a,2
+	add	a,a
+	add	a,a
+	add	a,d
+
+	ld	[hl+],a
+
+	;X座標
+	ld	de,m_EnemyX		;書き込み元アドレスを指定
+	ld	a,e
+	add	a,4
+	sub	a,b
+	ld	e,a
+
+	ld	a,[de]
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,8
+
+	ld	d,a			;書き込み元を読み込んだ時点でdeは用済みとなる
+	ld	a,4
+	sub	a,c
+	and	a,1
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,d
+
+	ld	[hl+],a
+
+
+	;パターン
+	ld	a,8
+	sub	a,c
+	ld	[hl+],a
+
+	;アトリビュート
+	xor	a
+	ld	[hl+],a
+
+	dec	c
+	jr	nz,.eloop
+	
+	jr	.end
+.blank:
+	ld	c,16
+	xor	a
+.bloop:
+	ld [hl+],a
+	dec	c
+	jr	nz,.bloop
+.end:
+	dec	b
+	jr	nz,.loop
+	ret
