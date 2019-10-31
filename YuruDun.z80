@@ -88,8 +88,21 @@ Seed					db			;ランダムシード
 
 _SceneAdress				dw			;現在のフレームで実行するアドレス
 
-SECTION "HI-RAM",HRAM[$FF80]
-SPRITE_ROUTINE			ds	SpriteRoutineEnd - SpriteRoutine
+;Map時の変数
+m_MapData				ds	10*8		;マップデータ
 
-_Pad				db
-_PadDebounce			db
+m_EnemyX				ds	4		;敵X座標(これは最初の敵アドレス)
+m_EnemyY				ds	4		;敵Y座標(これは最初の敵アドレス)
+m_EnemyType				ds	4		;敵の種類(これは最初の敵アドレス)
+								;0 = 何もない
+								;1 = スライム
+
+m_PlayerX				db			;プレイヤーのX座標
+m_PlayerY				db			;プレイヤーのY座標
+m_PlayerWait				db			;プレイヤーの行動待ちフレーム
+
+SECTION "HI-RAM",HRAM[$FF80]
+SPRITE_ROUTINE			ds	SpriteRoutineEnd - SpriteRoutine	;スプライト描画用ルーチン
+
+_Pad				db				;現在のボタン情報
+_PadDebounce			db				;押したときのボタン情報

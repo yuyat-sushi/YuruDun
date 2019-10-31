@@ -15,7 +15,7 @@ Initialize:								;初期スタックポインタ = $FFFE
 	ld			hl,$C000
 	ld			bc,$2000				;スタックポインタをこの領域に配置しないこと。
 	call		Mem_Set
-	ld			sp,$D000
+	ld			sp,$DF00
 	push		de
 
 	ld			hl,$FF80

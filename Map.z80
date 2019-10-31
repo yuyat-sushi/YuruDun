@@ -1,6 +1,10 @@
 ;最初にマップデータをロードするとき
 MapLoad:
-        ;マップデータをBGデータに変換する
+        ;マップデータをRAMに転送する
+	ld      bc, 10*8
+        ld      de, m_MapData
+        ld      hl, _MapData1
+        call    LDIR
 	AdressLD	MapAwake, _SceneAdress
         ret 
 
@@ -8,14 +12,32 @@ MapLoad:
 MapAwake:
         ;VRAM操作するため、スクリーンをオフに
         call    ScreenOff
-        ;グラフィックをロード
-        ld      bc, 56*16
+        ;グラフィックデータをVRAMに転送する
+        ;BGデータ
+	ld      bc, 56*16
         ld      de, _VRAM + $1000
         ld      hl, _MapBGTile
         call    LDIR
-        ;マップデータをBGに
-        ld      de,_MapData1
+        ;Spデータ
+	ld      bc, 65*16
+        ld      de, _VRAM
+        ld      hl, _MapSpTile
+        call    LDIR
+	;マップデータをBGに
+        ld      de,m_MapData
         call    __SetMapData
+
+	;ステータス描画
+	ld	bc,$1402
+	ld	de,_StatusMap
+	ld	hl,_SCRN1
+	call	__SetTileMap
+	
+	ld	a,8
+	ldh	[rWX],a
+	ld	a,128
+	ldh 	[rWY], a
+
         ;描画処理終了
         call    ScreenOnVB
 	AdressLD	MapUpdate, _SceneAdress
@@ -23,7 +45,7 @@ MapAwake:
 
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
-
+	
         ret
 
 MapVblack:
