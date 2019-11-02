@@ -60,7 +60,7 @@ begin:
 main:
 	ldh	a,[rLY]
 	cp	2
-	jp	nc,main
+	jr	nc,main
 	ld	a,[_SceneAdress]
 	ld	h,a
 	ld	a,[_SceneAdress + 1]
@@ -69,9 +69,9 @@ main:
 	;A+B+Start+Selectでリセットを行う
 	ld	a,[_Pad]
 	cp	$0f
-	jp	z,begin		;リセット判定
+	jr	z,begin		;リセット判定
 	halt
-	jp	main
+	jr	main
 
 VblankMethod:
 	call	$FF80		;スプライト処理
@@ -103,6 +103,7 @@ m_EnemyY				ds	4		;敵Y座標(これは最初の敵アドレス)
 m_EnemyType				ds	4		;敵の種類(これは最初の敵アドレス)
 								;0 = 何もない
 								;1 = スライム
+m_EnemyWait				ds	4		;敵の行動待ちフレーム(これは最初の敵アドレス)								
 m_EnemyCount				db			;敵の数
 
 SECTION "HI-RAM",HRAM[$FF80]

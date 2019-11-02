@@ -49,9 +49,11 @@ MapAwake:
 
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
-	call __DrawEnemySprite
+	call __DrawEnemySprite		;敵のスプライト
+	call __DrawPlayerSprite		;プレイヤーのスプライト
         ret
 
+;マップ画面のVblank中に行う事
 MapVblack:
 
         ret
@@ -151,6 +153,116 @@ __SetMapData
 	jr	nz,.loop
         ret
 
+;------------------------------------------------
+;プレイヤーの配置
+;------------------------------------------------
+__SetPlayer:
+	ld	bc,$0A08	;幅10高さ8
+	ld	de,m_MapData	;マップデータ書き込み
+.loop:
+	ld	a,[de]
+	cp	7
+	jr	nz,.skip	;マップデータが6(enemy)でない場合、スキップ
+
+	ld	hl,m_PlayerX	;X座標指定
+	ld	a,10		;10-b
+	sub	a,b
+	ld	[hl],a
+
+	ld	hl,m_PlayerY	;Y座標指定
+	ld	a,8		;8-c
+	sub	a,c
+	ld	[hl],a
+
+	ld	a,2		;7(player)を2(floor)に変換
+	ld	[de],a
+
+	jr	.end		;playerは一つだけなので、一つ設置出来た場合.endへ
+
+.skip:
+	inc	de
+	dec	b
+	jr	nz,.loop
+	ld	b,$0A
+	dec	c
+	jr	nz,.loop
+.end:
+	ret
+
+;------------------------------------------------
+;プレイヤーの配置
+;------------------------------------------------
+__MovePlayer:
+	;ウェイト待ちか？
+	ld	a,[m_PlayerWait]
+	cp	0
+	jr	nz,.waiting
+	;ウェイト待ちじゃなかった場合
+.move
+	jr	.end
+	;ウェイト待ちだった場合
+.waiting:
+.end
+	ret
+
+;------------------------------------------------
+;プレイヤーキャラクターの描画
+;------------------------------------------------
+__DrawPlayerSprite:
+	ld	hl,OAM_BUFFER0
+	;敵キャラクターが存在する場合
+	ld	c,4
+.loop:
+	;Y座標
+	ld	a,[m_PlayerY]
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,16
+
+	ld	d,a
+	ld	a,4
+	sub	a,c
+	and	a,2
+	add	a,a
+	add	a,a
+	add	a,d
+
+	ld	[hl+],a
+
+	;X座標
+	ld	a,[m_PlayerX]		;書き込み元アドレスを指定
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,8
+
+	ld	d,a
+	ld	a,4
+	sub	a,c
+	and	a,1
+	add	a,a
+	add	a,a
+	add	a,a
+	add	a,d
+
+	ld	[hl+],a
+
+
+	;パターン
+	ld	a,4
+	sub	a,c
+	ld	[hl+],a
+
+	;アトリビュート
+	xor	a
+	ld	[hl+],a
+
+	dec	c
+	jr	nz,.loop
+	ret
 
 ;------------------------------------------------
 ;敵の配置
@@ -200,42 +312,6 @@ __SetEnemy:
 	ld	b,$0A
 	dec	c
 	jr	nz,.loop
-	ret
-
-;------------------------------------------------
-;プレイヤーの配置
-;------------------------------------------------
-__SetPlayer:
-	ld	bc,$0A08	;幅10高さ8
-	ld	de,m_MapData	;マップデータ書き込み
-.loop:
-	ld	a,[de]
-	cp	7
-	jr	nz,.skip	;マップデータが6(enemy)でない場合、スキップ
-
-	ld	hl,m_PlayerX	;X座標指定
-	ld	a,10		;10-b
-	sub	a,b
-	ld	[hl],a
-
-	ld	hl,m_PlayerY	;Y座標指定
-	ld	a,8		;8-c
-	sub	a,c
-	ld	[hl],a
-
-	ld	a,2		;7(player)を2(floor)に変換
-	ld	[de],a
-
-	jr	.end		;playerは一つだけなので、一つ設置出来た場合.endへ
-
-.skip:
-	inc	de
-	dec	b
-	jr	nz,.loop
-	ld	b,$0A
-	dec	c
-	jr	nz,.loop
-.end:
 	ret
 
 ;------------------------------------------------
