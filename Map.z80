@@ -49,6 +49,9 @@ MapAwake:
 
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
+	;入力・処理
+	call __MovePlayer		;プレイヤーの移動
+	;描画準備
 	call __DrawEnemySprite		;敵のスプライト
 	call __DrawPlayerSprite		;プレイヤーのスプライト
         ret
@@ -190,18 +193,121 @@ __SetPlayer:
 	ret
 
 ;------------------------------------------------
-;プレイヤーの配置
+;プレイヤーの移動
 ;------------------------------------------------
 __MovePlayer:
 	;ウェイト待ちか？
 	ld	a,[m_PlayerWait]
 	cp	0
-	jr	nz,.waiting
+	jp	nz,.waiting
 	;ウェイト待ちじゃなかった場合
-.move
+.move:
+	;現在の座標をMapDataの現在位置のアドレスに変換する
+	ld	a,[m_PlayerX]		;X座標
+	ld	d,a
+	ld	a,[m_PlayerY]		;Y座標
+	ld	hl,m_MapData		;マップデータアドレス先頭
+	ld	e,a
+	add	a,a			;Y座標*10+X座標の番地に現在位置がある
+	add	a,a
+	add	a,a
+	add	a,e
+	add	a,e
+	add	a,d
+	add	a,l
+	ld	l,a
+
+	;ボタン入力で方向を決める
+	ld	a,[_Pad]
+	bit	4,a
+	jr	nz,.right
+	bit	5,a
+	jr	nz,.left
+	bit	6,a
+	jr	nz,.up
+	bit	7,a
+	jr	nz,.down
+	jp	.end
+	;移動先の地形データをbに代入する
+.left:		
+	;アドレスを移動先にする	
+	ld	a,l
+	sub	a,1
+	ld	l,a
+
+	;座標を移動先にする
+	ld	a,d
+	sub	a,1
+	ld	d,a
+
+	;移動先の地形データをbに代入する
+	ld	a,[hl]
+	ld	b,a
+	jp	.endif
+.right:
+	;アドレスを移動先にする	
+	ld	a,l
+	add	a,1
+	ld	l,a
+
+	;座標を移動先にする
+	ld	a,d
+	add	a,1
+	ld	d,a
+
+	;移動先の地形データをbに代入する
+	ld	a,[hl]
+	ld	b,a
+	jp	.endif
+.up:
+	;アドレスを移動先にする	
+	ld	a,l
+	sub	a,10
+	ld	l,a
+
+	;座標を移動先にする
+	ld	a,e
+	sub	a,1
+	ld	e,a
+
+	;移動先の地形データをbに代入する
+	ld	a,[hl]
+	ld	b,a
+	jp	.endif
+.down:
+	;アドレスを移動先にする	
+	ld	a,l
+	add	a,10
+	ld	l,a
+
+	;座標を移動先にする
+	ld	a,e
+	add	a,1
+	ld	e,a
+
+	;移動先の地形データをbに代入する
+	ld	a,[hl]
+	ld	b,a
+	jp	.endif
+.endif:
+	;それが移動可能だった場合、x=d,y=eに移動させる
+	ld	a,b
+	cp	2
+	jr	c,.wall		;0,1は、壁である
+	;移動を反映する
+	ld	a,d
+	ld	[m_PlayerX],a
+	ld	a,e
+	ld	[m_PlayerY],a
+	;移動に成功したのでウェイトを追加する
+	ld	a,8
+	ld	[m_PlayerWait],a
+.wall
 	jr	.end
-	;ウェイト待ちだった場合
 .waiting:
+	;ウェイト待ちだった場合
+	ld	hl,m_PlayerWait
+	dec	[hl]
 .end
 	ret
 

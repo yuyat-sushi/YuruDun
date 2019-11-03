@@ -88,6 +88,7 @@ OAM_BUFFER0	 			ds	160		;OAMバッファ
 Seed					db			;ランダムシード
 
 _SceneAdress				dw			;現在のフレームで実行するアドレス
+_VblankAdre
 
 SECTION "MapMode RAM",WRAM0[$C100]
 ;Map時の変数
