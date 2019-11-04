@@ -94,6 +94,8 @@ SECTION "MapMode RAM",WRAM0[$C100]
 ;Map時の変数
 m_MapData				ds	10*8		;マップデータ
 
+m_FloorNumber				db			;今何階か
+
 m_PlayerX				db			;プレイヤーのX座標
 m_PlayerY				db			;プレイヤーのY座標
 m_PlayerWait				db			;プレイヤーの行動待ちフレーム
