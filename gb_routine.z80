@@ -302,6 +302,59 @@ Sound_Init:								;レジスタ初期化。
 	ldh			[rNR51],a				;全チャンネルLR出力on
 	ret
 
+;---------------------------------------------------------------------------
+;　16進数2桁→10進数5桁
+;  HLに10進化したい数を入れて呼び出し
+;  af hl de
+;---------------------------------------------------------------------------
+bin2dec:
+	ld			de,-10000
+	xor			a
+.b2d10k:
+	add			hl,de
+	inc			a
+	jr			c,.b2d10k
+	dec			a
+	ld			de,10000
+	add			hl,de
+	ld			[Decimal],a
+
+	ld			de,-1000
+	xor			a
+.b2d1k:
+	add			hl,de
+	inc			a
+	jr			c,.b2d1k
+	dec			a
+	ld			de,1000
+	add			hl,de
+	ld			[Decimal + 1],a
+
+	ld			de,-100
+	xor			a
+.b2d100:
+	add			hl,de
+	inc			a
+	jr			c,.b2d100
+	dec			a
+	ld			de,100
+	add			hl,de
+	ld			[Decimal + 2],a
+
+	ld			de,-10
+	xor			a
+.b2d10:
+	add			hl,de
+	inc			a
+	jr			c,.b2d10
+	dec			a
+	ld			de,10
+	add			hl,de
+	ld			[Decimal + 3],a
+
+	ld			a,l
+	ld			[Decimal + 4],a
+	ret
 
 ;*********************************************************
 ;汎用入力判定			workram : _PadDebounce

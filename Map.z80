@@ -6,9 +6,9 @@ MapLoad:
         ld      hl, _MapData1
         call    LDIR
 	;敵の配置
-	call	__SetEnemy
+	call	m_SetEnemy
 	;プレイヤーの配置
-	call	__SetPlayer
+	call	m_SetPlayer
 	AdressLD	MapAwake, _SceneAdress
         ret 
 
@@ -17,9 +17,14 @@ MapAwake:
         ;VRAM操作するため、スクリーンをオフに
         call    ScreenOff
         ;グラフィックデータをVRAMに転送する
-        ;BGデータ
-	ld      bc, 56*16
+        ;共通データ
+	ld      bc, 32*16
         ld      de, _VRAM + $1000
+        ld      hl, _TextTile
+        call    LDIR
+	;BGデータ
+	ld      bc, 24*16
+        ld      de, _VRAM + $1200
         ld      hl, _MapBGTile
         call    LDIR
         ;Spデータ
@@ -29,13 +34,13 @@ MapAwake:
         call    LDIR
 	;マップデータをBGに
         ld      de,m_MapData
-        call    __SetMapData
+        call    m_SetMapData
 
 	;ステータス描画
 	ld	bc,$1402
 	ld	de,_StatusMap
 	ld	hl,_SCRN1
-	call	__SetTileMap
+	call	g_SetTileMap
 	
 	ld	a,8
 	ldh	[rWX],a
@@ -50,65 +55,22 @@ MapAwake:
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
 	;入力・処理
-	call __MovePlayer		;プレイヤーの移動
-	call __MoveEnemy		;敵の移動
+	call m_MovePlayer		;プレイヤーの移動
+	call m_MoveEnemy		;敵の移動
 	;描画準備
-	call __DrawEnemySprite		;敵のスプライト
-	call __DrawPlayerSprite		;プレイヤーのスプライト
+	call m_DrawEnemySprite		;敵のスプライト
+	call m_DrawPlayerSprite		;プレイヤーのスプライト
         ret
 
 ;マップ画面のVblank中に行う事
 MapVblack:
-
         ret
-
-
-
-;----------------------------------------------------------------------------
-;通常マップ定義
-;bc = 幅・高さ
-;de = 読み込み元アドレス
-;hl = 定義先アドレス
-;----------------------------------------------------------------------------
-__SetTileMap:
-	push	bc	;幅と高さを記憶
-
-.loop:
-	ld	a,[de]	;書き込み処理
-	inc	de
-	ld	[hl+],a
-	dec	b
-	jr	nz,.loop
-
-	ld	a,c	;幅のリセット
-	pop	bc	
-	ld	c,a
-	push	bc
-	
-	ld	a,b	;b = 32の時の２重ループ防止
-	cp	a,32
-	jr	z,.skip
-	
-	ld	a,l	;32バイト分進める
-	sub	a,b	;32 - 横幅
-	add	a,32
-	ld	l,a
-	ld	a,h
-	adc	a,0
-	ld	h,a
-	
-.skip:
-	dec	c
-	jr	nz,.loop
-
-	pop	bc
-	ret
 
 ;----------------------------------------------------------------------------
 ;マップ定義
 ;de = 読み込み先マップデータ
 ;----------------------------------------------------------------------------
-__SetMapData
+m_SetMapData
         ld bc, $0A08    ;幅10,高さ8
         ld hl, _SCRN0
 
@@ -162,7 +124,7 @@ __SetMapData
 ;------------------------------------------------
 ;プレイヤーの配置
 ;------------------------------------------------
-__SetPlayer:
+m_SetPlayer:
 	ld	bc,$0A08	;幅10高さ8
 	ld	de,m_MapData	;マップデータ書き込み
 .loop:
@@ -198,7 +160,7 @@ __SetPlayer:
 ;------------------------------------------------
 ;プレイヤーの移動
 ;------------------------------------------------
-__MovePlayer:
+m_MovePlayer:
 	;ウェイト待ちか？
 	ld	a,[m_PlayerWait]
 	cp	0
@@ -316,7 +278,7 @@ __MovePlayer:
 ;------------------------------------------------
 ;プレイヤーキャラクターの描画
 ;------------------------------------------------
-__DrawPlayerSprite:
+m_DrawPlayerSprite:
 	ld	hl,OAM_BUFFER0
 	;使用スプライト数
 	ld	c,4
@@ -375,7 +337,7 @@ __DrawPlayerSprite:
 ;------------------------------------------------
 ;敵の配置
 ;------------------------------------------------
-__SetEnemy:
+m_SetEnemy:
 	xor	a
 	ld	[m_EnemyCount],a;敵の数をリセット
 	ld	bc,$0A08	;幅10高さ8
@@ -427,7 +389,7 @@ __SetEnemy:
 ;------------------------------------------------
 ;敵の移動
 ;------------------------------------------------
-__MoveEnemy:
+m_MoveEnemy:
 	ld	c,0			;ループ変数リセット、敵の数分ループする
 .loop:
 	;敵のタイプは何か？
@@ -604,7 +566,7 @@ __MoveEnemy:
 ;------------------------------------------------
 ;敵キャラクターの描画
 ;------------------------------------------------
-__DrawEnemySprite:
+m_DrawEnemySprite:
 	ld	a,[m_EnemyCount]
 	ld	b,4
 	ld	hl,OAM_BUFFER0 + 16

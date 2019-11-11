@@ -1,0 +1,103 @@
+;----------------------------------------------------------------------------
+;通常マップ定義
+;bc = 幅・高さ
+;de = 読み込み元アドレス
+;hl = 定義先アドレス
+;----------------------------------------------------------------------------
+g_SetTileMap:
+	push	bc	;幅と高さを記憶
+
+.loop:
+	ld	a,[de]	;書き込み処理
+	inc	de
+	ld	[hl+],a
+	dec	b
+	jr	nz,.loop
+
+	ld	a,c	;幅のリセット
+	pop	bc	
+	ld	c,a
+	push	bc
+	
+	ld	a,b	;b = 32の時の２重ループ防止
+	cp	a,32
+	jr	z,.skip
+	
+	ld	a,l	;32バイト分進める
+	sub	a,b	;32 - 横幅
+	add	a,32
+	ld	l,a
+	ld	a,h
+	adc	a,0
+	ld	h,a
+	
+.skip:
+	dec	c
+	jr	nz,.loop
+
+	pop	bc
+	ret
+
+;----------------------------------------------------------------------------
+;5桁の数字を5マスのBGに定義
+;bc = 変換したい数字
+;d = 数字の0のBG番号
+;hl = 定義先アドレス
+;----------------------------------------------------------------------------
+g_Set5BCDBG:
+	;数字をBCDにする
+	push	hl
+	push	de
+	ld	h,b
+	ld	l,c
+	call	bin2dec
+	pop	de
+	pop	hl
+	;10000
+	ld	a,[Decimal]
+	cp	0
+	jp	z,.skip10000		;10000の位が0の時、数字を配置しない
+	add	a,d
+.skip10000:
+	ld	e,a
+	ld	[hl+],a
+	;1000
+	ld	a,[Decimal + 1]
+	add	a,e
+	cp	0
+	jp	z,.skip1000		;1000の位が0の時、数字を配置しない
+	sub	a,e
+	add	a,d
+.skip1000:
+	ld	e,a
+	ld	[hl+],a
+	;100
+	ld	a,[Decimal + 2]
+	add	a,e
+	cp	0
+	jp	z,.skip100		;100の位が0の時、数字を配置しない
+	sub	a,e
+	add	a,d
+.skip100:
+	ld	e,a
+	ld	[hl+],a
+	;10
+	ld	a,[Decimal + 3]
+	add	a,e
+	cp	0
+	jp	z,.skip10		;10の位が0の時、数字を配置しない
+	sub	a,e
+	add	a,d
+.skip10:
+	ld	e,a
+	ld	[hl+],a
+	;1
+	ld	a,[Decimal + 4]
+	add	a,e
+	cp	0
+	jp	z,.skip1		;10の位が0の時、数字を配置しない
+	sub	a,e
+	add	a,d
+.skip1:
+	ld	[hl+],a
+	ret

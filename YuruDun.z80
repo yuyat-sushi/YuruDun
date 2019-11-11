@@ -54,7 +54,7 @@ begin:
 	ld	sp,$FFFE
 	call	Initialize
 	;最初に呼び出すシーン
-	AdressLD	MapLoad, _SceneAdress
+	AdressLD	BattleLoad, _SceneAdress
 	call	ScreenOnVB
 	ei
 main:
@@ -79,18 +79,24 @@ VblankMethod:
 	ret
 
 	include "gb_routine.z80"
+	include "Graphic.z80"
 	include "Map.Z80"
+	include "Battle.Z80"
+
+
+SECTION "Data",ROMX[$4000],BANK[1]
 	include "GraphicData.Z80"
 	include "Data.Z80"
 
 SECTION "Work RAM",WRAM0[$C000]
 OAM_BUFFER0	 			ds	160		;OAMバッファ
 Seed					db			;ランダムシード
+Decimal					ds	5		;5桁のBCDの返り値
 
 _SceneAdress				dw			;現在のフレームで実行するアドレス
 _VblankAdress				dw			;Vblank中に実行するアドレス
 
-SECTION "MapMode RAM",WRAM0[$C100]
+SECTION "MapScene RAM",WRAM0[$C100]
 ;Map時の変数
 m_MapData				ds	10*8		;マップデータ
 
@@ -100,7 +106,7 @@ m_PlayerX				db			;プレイヤーのX座標
 m_PlayerY				db			;プレイヤーのY座標
 m_PlayerWait				db			;プレイヤーの行動待ちフレーム
 
-SECTION "Enemy RAM",WRAM0[$C200]
+SECTION "MapScene-Enemy RAM",WRAM0[$C200]
 m_EnemyX				ds	4		;敵X座標(これは最初の敵アドレス)
 m_EnemyY				ds	4		;敵Y座標(これは最初の敵アドレス)
 m_EnemyType				ds	4		;敵の種類(これは最初の敵アドレス)
@@ -108,6 +114,19 @@ m_EnemyType				ds	4		;敵の種類(これは最初の敵アドレス)
 								;1 = スライム
 m_EnemyWait				ds	4		;敵の行動待ちフレーム(これは最初の敵アドレス)								
 m_EnemyCount				db			;敵の数
+
+SECTION "BattleScene",WRAM0[$C400]
+b_PlayerHP				dw			;プレイヤーのHP
+b_PlayerATK				dw			;プレイヤーのATK
+b_PlayerAS				dw			;プレイヤーのAS
+b_PlayerASWait				dw			;プレイヤーの攻撃ウェイト
+
+b_EnemyHP				dw			;敵のHP
+b_EnemyATK				dw			;敵のATK
+b_EnemyAS				dw			;敵のAS
+b_EnemyASWait				dw			;敵の攻撃ウェイト
+
+b_EnemyNumber				db			;敵のマップ上の番号
 
 SECTION "HI-RAM",HRAM[$FF80]
 SPRITE_ROUTINE			ds	SpriteRoutineEnd - SpriteRoutine	;スプライト描画用ルーチン

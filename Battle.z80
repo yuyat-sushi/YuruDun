@@ -1,0 +1,39 @@
+BattleLoad:
+        ;敵HP・ATK・AS
+        ld a,100
+        ld [b_EnemyHP+1],a
+        ld a,100
+        ld [b_EnemyATK+1],a
+        ld a,100
+        ld [b_EnemyAS+1],a
+        AdressLD	BattleAwake, _SceneAdress
+        ret 
+
+BattleAwake:
+        ;グラフィックロード
+        ;VRAM操作するため、スクリーンをオフに
+        call    ScreenOff
+        ;共通データ
+	ld      bc, 32*16
+        ld      de, _VRAM + $1000
+        ld      hl, _TextTile
+        call    LDIR
+        ;背景データ
+	ld      bc, 14*16
+        ld      de, _VRAM + $1200
+        ld      hl, _BattleFieldTile
+        call    LDIR
+        ;敵
+        ld      bc, 24*16
+        ld      de, _VRAM + $1600
+        ld      hl, _EnemyTile1
+        call    LDIR
+        ;描画処理終了
+        call    ScreenOnVB
+        AdressLD	BattleUpdate, _SceneAdress
+        ret 
+
+BattleUpdate:
+        ;バトル処理
+        
+        ret
