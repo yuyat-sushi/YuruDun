@@ -1,10 +1,14 @@
 BattleLoad:
         ;敵HP・ATK・AS
-        ld a,100
+        xor a
+        ld [b_EnemyHP],a
+        ld [b_EnemyATK],a
+        ld [b_EnemyAS],a
+        ld a,30
         ld [b_EnemyHP+1],a
-        ld a,100
+        ld a,5
         ld [b_EnemyATK+1],a
-        ld a,100
+        ld a,30
         ld [b_EnemyAS+1],a
         AdressLD	BattleAwake, _SceneAdress
         ret 
@@ -31,7 +35,7 @@ BattleAwake:
         ;描画処理終了
         call    ScreenOnVB
         AdressLD	BattleUpdate, _SceneAdress
-        ret 
+        ret
 
 BattleUpdate:
         ;バトル処理

@@ -13,7 +13,9 @@ AdressLD: MACRO
 	ld	a,l
 	ld	[\2 + 1],a
 	ENDM
-
+SECTION "Nothing",ROM0[$0]
+None:
+	ret
 SECTION "CALL HL",ROM0[$18]
 	jp		hl					;$18
 
@@ -54,7 +56,7 @@ begin:
 	ld	sp,$FFFE
 	call	Initialize
 	;最初に呼び出すシーン
-	AdressLD	BattleLoad, _SceneAdress
+	AdressLD	GameStart, _SceneAdress
 	call	ScreenOnVB
 	ei
 main:
@@ -80,6 +82,7 @@ VblankMethod:
 
 	include "gb_routine.z80"
 	include "Graphic.z80"
+	include "GameStart.z80"
 	include "Map.Z80"
 	include "Battle.Z80"
 
