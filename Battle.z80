@@ -32,12 +32,88 @@ BattleAwake:
         ld      de, _VRAM + $1600
         ld      hl, _EnemyTile1
         call    LDIR
+        ;背景マップ
+        ld      bc,$140A
+        ld      de,_BattleFieldMap
+        ld      hl,_SCRN0
+        call    g_SetTileMap
+        ;ステータスマップ
+        ld      bc,$1408
+        ld      de,_BattleStatusMap
+        ld      hl,_SCRN0 + $140
+        call    g_SetTileMap        
+        ;敵マップ
+        ld      bc,$0604
+        ld      de,_Enemy1Map
+        ld      hl,_SCRN0 + $C2
+        call    g_SetTileMap
         ;描画処理終了
         call    ScreenOnVB
         AdressLD	BattleUpdate, _SceneAdress
+        AdressLD        BattleVblank, _VblankAdress
         ret
 
 BattleUpdate:
         ;バトル処理
-        
+        ;文字表示の前準備
+        call    __SetParameter
+        ret
+
+BattleVblank:
+        ;文字表示
+        ld      bc,$0503
+        ld      de,b_PlayerParameterBuffer
+        ld      hl,_SCRN0 + $1C4
+        call    g_SetTileMap
+        ld      bc,$0503
+        ld      de,b_EnemyParameterBuffer
+        ld      hl,_SCRN0 + $1CD
+        call    g_SetTileMap
+        ret
+
+__SetParameter:
+        ;味方のパラメーター表示
+        ld      a,[b_PlayerHP]
+        ld      b,a
+        ld      a,[b_PlayerHP+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_PlayerParameterBuffer
+        call    g_Set5BCDBG
+        ld      a,[b_PlayerATK]
+        ld      b,a
+        ld      a,[b_PlayerATK+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_PlayerParameterBuffer + 5
+        call    g_Set5BCDBG
+        ld      a,[b_PlayerAS]
+        ld      b,a
+        ld      a,[b_PlayerAS+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_PlayerParameterBuffer + 10
+        call    g_Set5BCDBG
+        ;敵のパラメーター表示
+        ld      a,[b_EnemyHP]
+        ld      b,a
+        ld      a,[b_EnemyHP+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_EnemyParameterBuffer
+        call    g_Set5BCDBG
+        ld      a,[b_EnemyATK]
+        ld      b,a
+        ld      a,[b_EnemyATK+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_EnemyParameterBuffer + 5
+        call    g_Set5BCDBG
+        ld      a,[b_EnemyAS]
+        ld      b,a
+        ld      a,[b_EnemyAS+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,b_EnemyParameterBuffer + 10
+        call    g_Set5BCDBG
         ret

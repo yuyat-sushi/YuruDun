@@ -57,6 +57,7 @@ begin:
 	call	Initialize
 	;最初に呼び出すシーン
 	AdressLD	GameStart, _SceneAdress
+	AdressLD	None, _VblankAdress
 	call	ScreenOnVB
 	ei
 main:
@@ -77,6 +78,11 @@ main:
 
 VblankMethod:
 	call	$FF80		;スプライト処理
+	ld	a,[_VblankAdress]
+	ld	h,a
+	ld	a,[_VblankAdress + 1]
+	ld	l,a	
+	call	$0018
 	call		ReadJoystick
 	ret
 
@@ -131,6 +137,8 @@ b_EnemyASWait				dw			;敵の攻撃ウェイト
 
 b_EnemyNumber				db			;敵のマップ上の番号
 
+b_PlayerParameterBuffer			ds	15		;プレイヤーパラメーターマップ用バッファ			
+b_EnemyParameterBuffer			ds	15		;敵パラメーターマップ用バッファ	
 SECTION "HI-RAM",HRAM[$FF80]
 SPRITE_ROUTINE			ds	SpriteRoutineEnd - SpriteRoutine	;スプライト描画用ルーチン
 
