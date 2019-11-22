@@ -1,15 +1,19 @@
 BattleLoad:
-        ;敵HP・ATK・AS
+        ;敵HP・ATK・AS設定
         xor a
-        ld [b_EnemyHP],a
-        ld [b_EnemyATK],a
-        ld [b_EnemyAS],a
-        ld a,30
-        ld [b_EnemyHP+1],a
-        ld a,5
-        ld [b_EnemyATK+1],a
-        ld a,30
-        ld [b_EnemyAS+1],a
+        ld      [b_EnemyHP],a
+        ld      [b_EnemyATK],a
+        ld      a,30
+        ld      [b_EnemyHP+1],a
+        ld      a,5
+        ld      [b_EnemyATK+1],a
+        ld      a,60
+        ld      [b_EnemyAS],a
+        ;ウェイトカウンターリセット
+        ld      a,[b_PlayerAS]
+        ld      [b_PlayerASWait],a
+        ld      a,[b_EnemyAS]
+        ld      [b_EnemyASWait],a
         AdressLD	BattleAwake, _SceneAdress
         ret 
 
@@ -47,6 +51,7 @@ BattleAwake:
         ld      de,_Enemy1Map
         ld      hl,_SCRN0 + $C2
         call    g_SetTileMap
+        call    __SetParameter
         ;描画処理終了
         call    ScreenOnVB
         AdressLD	BattleUpdate, _SceneAdress
@@ -55,6 +60,62 @@ BattleAwake:
 
 BattleUpdate:
         ;バトル処理
+        ;プレイヤー側
+        ;ウェイト減少
+        ld      a,[b_PlayerASWait]
+        dec     a               ;ウェイト
+        jr      nz, .pskip      ;ウェイトが0にならばかった場合、攻撃しない
+        ;ウェイトが0になったら攻撃、その後ウェイトリセット
+        ld      a,[b_EnemyHP]
+        ld      h,a
+        ld      a,[b_EnemyHP + 1]
+        ld      l,a
+        ld      a,[b_PlayerATK]
+        xor     $FF
+        ld      b,a
+        ld      a,[b_PlayerATK + 1]
+        xor     $FF
+        ld      c,a
+        inc     bc
+        
+        add     hl, bc
+        ld      a,h
+        ld      [b_EnemyHP],a
+        ld      a,l
+        ld      [b_EnemyHP+1],a
+
+        ld      a,[b_PlayerAS]
+.pskip:
+        ld      [b_PlayerASWait],a
+        ;敵側
+        ;ウェイト減少
+        ld      a,[b_EnemyASWait]
+        dec     a               ;ウェイト
+        jr      nz, .eskip      ;ウェイトが0にならばかった場合、攻撃しない
+        ;ウェイトが0になったら攻撃、その後ウェイトリセット
+        ld      a,[b_PlayerHP]
+        ld      h,a
+        ld      a,[b_PlayerHP + 1]
+        ld      l,a
+        ld      a,[b_EnemyATK]
+        xor     $FF
+        ld      b,a
+        ld      a,[b_EnemyATK + 1]
+        xor     $FF
+        ld      c,a
+        inc     bc
+        
+        add     hl, bc
+
+        
+        ld      a,h
+        ld      [b_PlayerHP],a
+        ld      a,l
+        ld      [b_PlayerHP+1],a
+
+        ld      a,[b_EnemyAS]
+.eskip:
+        ld      [b_EnemyASWait],a
         ;文字表示の前準備
         call    __SetParameter
         ret
@@ -67,7 +128,7 @@ BattleVblank:
         call    g_SetTileMap
         ld      bc,$0503
         ld      de,b_EnemyParameterBuffer
-        ld      hl,_SCRN0 + $1CD
+        ld      hl,_SCRN0 + $1CE
         call    g_SetTileMap
         ret
 
@@ -87,13 +148,11 @@ __SetParameter:
         ld      d,$10
         ld      hl,b_PlayerParameterBuffer + 5
         call    g_Set5BCDBG
-        ld      a,[b_PlayerAS]
-        ld      b,a
-        ld      a,[b_PlayerAS+1]
+        ld      a,[b_PlayerASWait]
         ld      c,a
         ld      d,$10
-        ld      hl,b_PlayerParameterBuffer + 10
-        call    g_Set5BCDBG
+        ld      hl,b_PlayerParameterBuffer + 12
+        call    g_Set3BCDBG
         ;敵のパラメーター表示
         ld      a,[b_EnemyHP]
         ld      b,a
@@ -109,11 +168,9 @@ __SetParameter:
         ld      d,$10
         ld      hl,b_EnemyParameterBuffer + 5
         call    g_Set5BCDBG
-        ld      a,[b_EnemyAS]
-        ld      b,a
-        ld      a,[b_EnemyAS+1]
+        ld      a,[b_EnemyASWait]
         ld      c,a
         ld      d,$10
-        ld      hl,b_EnemyParameterBuffer + 10
-        call    g_Set5BCDBG
+        ld      hl,b_EnemyParameterBuffer + 12
+        call    g_Set3BCDBG
         ret
