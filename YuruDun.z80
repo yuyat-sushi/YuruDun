@@ -127,13 +127,13 @@ m_EnemyCount				db			;敵の数
 SECTION "BattleScene",WRAM0[$C400]
 b_PlayerHP				dw			;プレイヤーのHP
 b_PlayerATK				dw			;プレイヤーのATK
-b_PlayerAS				dw			;プレイヤーのAS
-b_PlayerASWait				dw			;プレイヤーの攻撃ウェイト
+b_PlayerAS				db			;プレイヤーのAS
+b_PlayerASWait				db			;プレイヤーの攻撃ウェイト
 
 b_EnemyHP				dw			;敵のHP
 b_EnemyATK				dw			;敵のATK
-b_EnemyAS				dw			;敵のAS
-b_EnemyASWait				dw			;敵の攻撃ウェイト
+b_EnemyAS				db			;敵のAS
+b_EnemyASWait				db			;敵の攻撃ウェイト
 
 b_EnemyNumber				db			;敵のマップ上の番号
 

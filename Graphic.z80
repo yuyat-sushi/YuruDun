@@ -93,11 +93,50 @@ g_Set5BCDBG:
 	ld	[hl+],a
 	;1
 	ld	a,[Decimal + 4]
-	add	a,e
-	cp	0
-	jp	z,.skip1		;10の位が0の時、数字を配置しない
-	sub	a,e
 	add	a,d
-.skip1:
 	ld	[hl+],a
 	ret
+
+;----------------------------------------------------------------------------
+<<<<<<< HEAD
+;3桁の数字を5マスのBGに定義
+=======
+;3桁の数字を3マスのBGに定義
+>>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
+;c = 変換したい数字
+;d = 数字の0のBG番号
+;hl = 定義先アドレス
+;----------------------------------------------------------------------------
+g_Set3BCDBG:
+	;数字をBCDにする
+	push	hl
+	push	de
+	ld	h,0
+	ld	l,c
+	call	bin2dec
+	pop	de
+	pop	hl
+	;100
+	ld	a,[Decimal + 2]
+	cp	0
+	jp	z,.skip100		;100の位が0の時、数字を配置しない
+	add	a,d
+.skip100:
+	ld	e,a
+	ld	[hl+],a
+	;10
+	ld	a,[Decimal + 3]
+	add	a,e
+	cp	0
+	jp	z,.skip10		;10の位が0の時、数字を配置しない
+	sub	a,e
+	add	a,d
+.skip10:
+	ld	e,a
+	ld	[hl+],a
+	;1
+	ld	a,[Decimal + 4]
+	add	a,d
+	ld	[hl+],a
+	ret
+
