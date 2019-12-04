@@ -37,8 +37,8 @@ SECTION "Org $100",ROM0[$100]
 
 ;Rom Header Info
 ;				 123456789abcdef
-	DB			"SHINOSHOGI"            	; Game Name
-	DB			0,0,0,0,0               	; Padding to 15 characters
+	DB			"YURUDUN"	            	; Game Name
+	DB			0,0,0,0		               	; Padding to 15 characters
 	DB			$0          	           	; 0 - MGB / $80 - Color compatible /
 	DB			0,0                     	; Game Maker Code
 	DB			0                       	; Game Unit Code
