@@ -2,20 +2,13 @@ GameStart:
         xor     a
         ld      [m_FloorNumber],a
         ld      [b_PlayerHP],a
-<<<<<<< HEAD
         ld      [b_PlayerATK],a      
-=======
-        ld      [b_PlayerATK],a   
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
+
         ld      a,100
         ld      [b_PlayerHP+1],a
         ld      a,10
         ld      [b_PlayerATK+1],a
-<<<<<<< HEAD
         ld      a,30
-=======
-        ld      a,40
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         ld      [b_PlayerAS],a
 
         AdressLD	BattleLoad, _SceneAdress

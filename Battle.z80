@@ -9,11 +9,8 @@ BattleLoad:
         ld      [b_EnemyATK+1],a
         ld      a,60
         ld      [b_EnemyAS],a
-<<<<<<< HEAD
+
         ;ASWait初期化
-=======
-        ;ウェイトカウンターリセット
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         ld      a,[b_PlayerAS]
         ld      [b_PlayerASWait],a
         ld      a,[b_EnemyAS]
@@ -64,7 +61,6 @@ BattleAwake:
 
 BattleUpdate:
         ;バトル処理
-<<<<<<< HEAD
         ;自分の攻撃
         ;ASWait判定
         ld      a,[b_PlayerASWait]
@@ -86,33 +82,11 @@ BattleUpdate:
 
         add     hl,bc
         
-=======
-        ;プレイヤー側
-        ;ウェイト減少
-        ld      a,[b_PlayerASWait]
-        dec     a               ;ウェイト
-        jr      nz, .pskip      ;ウェイトが0にならばかった場合、攻撃しない
-        ;ウェイトが0になったら攻撃、その後ウェイトリセット
-        ld      a,[b_EnemyHP]
-        ld      h,a
-        ld      a,[b_EnemyHP + 1]
-        ld      l,a
-        ld      a,[b_PlayerATK]
-        xor     $FF
-        ld      b,a
-        ld      a,[b_PlayerATK + 1]
-        xor     $FF
-        ld      c,a
-        inc     bc
-        
-        add     hl, bc
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         ld      a,h
         ld      [b_EnemyHP],a
         ld      a,l
         ld      [b_EnemyHP+1],a
 
-<<<<<<< HEAD
         ;ASWait初期化
         ld      a,[b_PlayerAS]
         ld      [b_PlayerASWait],a        
@@ -142,38 +116,12 @@ BattleUpdate:
         inc     bc
 
         add     hl,bc
-=======
-        ld      a,[b_PlayerAS]
-.pskip:
-        ld      [b_PlayerASWait],a
-        ;敵側
-        ;ウェイト減少
-        ld      a,[b_EnemyASWait]
-        dec     a               ;ウェイト
-        jr      nz, .eskip      ;ウェイトが0にならばかった場合、攻撃しない
-        ;ウェイトが0になったら攻撃、その後ウェイトリセット
-        ld      a,[b_PlayerHP]
-        ld      h,a
-        ld      a,[b_PlayerHP + 1]
-        ld      l,a
-        ld      a,[b_EnemyATK]
-        xor     $FF
-        ld      b,a
-        ld      a,[b_EnemyATK + 1]
-        xor     $FF
-        ld      c,a
-        inc     bc
-        
-        add     hl, bc
-
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         
         ld      a,h
         ld      [b_PlayerHP],a
         ld      a,l
         ld      [b_PlayerHP+1],a
 
-<<<<<<< HEAD
         ;ASWait初期化
         ld      a,[b_EnemyAS]
         ld      [b_EnemyASWait],a        
@@ -183,11 +131,7 @@ BattleUpdate:
         ld      hl,b_EnemyASWait
         dec     [hl]
 .endEnemyBattle:
-=======
-        ld      a,[b_EnemyAS]
-.eskip:
-        ld      [b_EnemyASWait],a
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
+
         ;文字表示の前準備
         call    __SetParameter
         ret
@@ -220,11 +164,7 @@ __SetParameter:
         ld      d,$10
         ld      hl,b_PlayerParameterBuffer + 5
         call    g_Set5BCDBG
-<<<<<<< HEAD
         ld      a,[b_PlayerAS]
-=======
-        ld      a,[b_PlayerASWait]
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         ld      c,a
         ld      d,$10
         ld      hl,b_PlayerParameterBuffer + 12
@@ -244,11 +184,7 @@ __SetParameter:
         ld      d,$10
         ld      hl,b_EnemyParameterBuffer + 5
         call    g_Set5BCDBG
-<<<<<<< HEAD
         ld      a,[b_EnemyAS]
-=======
-        ld      a,[b_EnemyASWait]
->>>>>>> fbcaba57c199b02ac9b3be1c026cb0e67fbbc1b6
         ld      c,a
         ld      d,$10
         ld      hl,b_EnemyParameterBuffer + 12
