@@ -104,12 +104,18 @@ Decimal					ds	5		;5桁のBCDの返り値
 
 _SceneAdress				dw			;現在のフレームで実行するアドレス
 _VblankAdress				dw			;Vblank中に実行するアドレス
+_SceneWait				db			;シーン遷移するまでのウェイト
 
 SECTION "MapScene RAM",WRAM0[$C100]
 ;Map時の変数
 m_MapData				ds	10*8		;マップデータ
 
 m_FloorNumber				db			;今何階か
+
+m_MapWait				ds	10
+
+m_PlayerParameterBuffer1		ds	10		;マップのパラメーターマップ用バッファ1			
+m_PlayerParameterBuffer2		ds	10		;マップのパラメーターマップ用バッファ2
 
 m_PlayerX				db			;プレイヤーのX座標
 m_PlayerY				db			;プレイヤーのY座標

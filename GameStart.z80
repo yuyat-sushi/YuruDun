@@ -11,5 +11,5 @@ GameStart:
         ld      a,30
         ld      [b_PlayerAS],a
 
-        AdressLD	BattleLoad, _SceneAdress
+        AdressLD	MapLoad, _SceneAdress
         ret

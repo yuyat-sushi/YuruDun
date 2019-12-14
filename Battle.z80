@@ -5,9 +5,9 @@ BattleLoad:
         ld      [b_EnemyATK],a
         ld      a,30
         ld      [b_EnemyHP+1],a
-        ld      a,5
+        ld      a,50
         ld      [b_EnemyATK+1],a
-        ld      a,60
+        ld      a,20
         ld      [b_EnemyAS],a
 
         ;ASWait初期化
@@ -53,6 +53,17 @@ BattleAwake:
         ld      hl,_SCRN0 + $C2
         call    g_SetTileMap
         call    __SetParameter
+        ;スプライト
+        xor     a
+        ld      hl,OAM_BUFFER0
+        ld      bc,160
+        call    Mem_Set
+
+	ld	a,166
+	ldh	[rWX],a
+	ld	a,143
+	ldh 	[rWY], a
+
         ;描画処理終了
         call    ScreenOnVB
         AdressLD	BattleUpdate, _SceneAdress
@@ -81,12 +92,27 @@ BattleUpdate:
         inc     bc
 
         add     hl,bc
-        
+
         ld      a,h
         ld      [b_EnemyHP],a
         ld      a,l
         ld      [b_EnemyHP+1],a
 
+        ;0以下になった場合、0にする
+        jr      c,.enemynotoverflow
+        xor     a
+        ld      [b_EnemyHP],a
+        ld      [b_EnemyHP+1],a        
+.enemynotoverflow
+
+        ;ライフが0になった場合、勝利処理へ
+        cp      0
+        jr      nz,.notwin
+        ld      a,60
+        ld      [_SceneWait],a
+        AdressLD	BattleWin, _SceneAdress
+        jp      .endEnemyBattle         
+.notwin:
         ;ASWait初期化
         ld      a,[b_PlayerAS]
         ld      [b_PlayerASWait],a        
@@ -122,6 +148,20 @@ BattleUpdate:
         ld      a,l
         ld      [b_PlayerHP+1],a
 
+        ;0以下になった場合、0にする
+        jr      c,.playernotoverflow
+        xor     a
+        ld      [b_PlayerHP],a
+        ld      [b_PlayerHP+1],a        
+.playernotoverflow
+        ;ライフが0になった場合、敗北処理へ
+        cp      0
+        jr      nz,.notlose
+        ld      a,60
+        ld      [_SceneWait],a
+        AdressLD	BattleLose, _SceneAdress
+        jp      .endEnemyBattle 
+.notlose:
         ;ASWait初期化
         ld      a,[b_EnemyAS]
         ld      [b_EnemyASWait],a        
@@ -131,7 +171,6 @@ BattleUpdate:
         ld      hl,b_EnemyASWait
         dec     [hl]
 .endEnemyBattle:
-
         ;文字表示の前準備
         call    __SetParameter
         ret
@@ -140,12 +179,43 @@ BattleVblank:
         ;文字表示
         ld      bc,$0503
         ld      de,b_PlayerParameterBuffer
-        ld      hl,_SCRN0 + $1C4
+        ld      hl,_SCRN0 + $1CE
         call    g_SetTileMap
         ld      bc,$0503
         ld      de,b_EnemyParameterBuffer
-        ld      hl,_SCRN0 + $1CE
+        ld      hl,_SCRN0 + $1C4
         call    g_SetTileMap
+        ret
+
+BattleWin:
+        ld      a,[_SceneWait]
+        cp      0
+        jr      nz,.wait
+        ;マップ上のエネミー消去
+        ld      a,[b_EnemyNumber]
+        ld      hl,m_EnemyType
+        add     a,l
+        ld      l,a
+        xor     a
+        ld      [hl],a
+        AdressLD	MapAwake, _SceneAdress
+        AdressLD        None, _VblankAdress       
+        ret
+.wait:
+        ld      hl,_SceneWait
+        dec     [hl]
+        ret
+
+BattleLose:
+        ld      a,[_SceneWait]
+        cp      0
+        jr      nz,.wait
+        AdressLD	GameStart, _SceneAdress
+        AdressLD        None, _VblankAdress       
+        ret
+.wait:
+        ld      hl,_SceneWait
+        dec     [hl]
         ret
 
 __SetParameter:

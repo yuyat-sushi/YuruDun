@@ -50,20 +50,31 @@ MapAwake:
         ;描画処理終了
         call    ScreenOnVB
 	AdressLD	MapUpdate, _SceneAdress
+	AdressLD	MapVblack, _VblankAdress
         ret
 
 ;マップ画面で毎フレーム行うこと
 MapUpdate:
 	;入力・処理
-	call m_MovePlayer		;プレイヤーの移動
-	call m_MoveEnemy		;敵の移動
+	call	m_MovePlayer		;プレイヤーの移動
+	call	m_MoveEnemy		;敵の移動
 	;描画準備
-	call m_DrawEnemySprite		;敵のスプライト
-	call m_DrawPlayerSprite		;プレイヤーのスプライト
+	call	m_DrawEnemySprite		;敵のスプライト
+	call	m_DrawPlayerSprite		;プレイヤーのスプライト
+	call	m_SetParameter
         ret
 
 ;マップ画面のVblank中に行う事
 MapVblack:
+        ;文字表示
+        ld      bc,$0502
+        ld      de,m_PlayerParameterBuffer1
+        ld      hl,_SCRN1 + $03
+        call    g_SetTileMap
+        ld      bc,$0502
+        ld      de,m_PlayerParameterBuffer2
+        ld      hl,_SCRN1 + $0F
+        call    g_SetTileMap
         ret
 
 ;----------------------------------------------------------------------------
@@ -252,6 +263,43 @@ m_MovePlayer:
 	jr	c,.wall		;0,1は壁、移動せずに処理終了
 	cp	3
 	jr	z,.stair	;3は階段、マップを切り替える
+	;敵が存在した場合、戦闘を行う
+	;bは地形データ判定後は不要なため、ループ変数にする
+	ld	b,0
+.enemyloop:
+	ld	hl,m_EnemyType	;存在しない場合、スキップ	
+	ld	a,l
+	add	a,b
+	ld	l,a
+	ld	a,[hl]
+	cp	0
+	jr	z,.notEqual	
+	ld	hl,m_EnemyX	;x座標の比較
+	ld	a,l
+	add	a,b
+	ld	l,a
+	ld	a,[hl]
+	cp	d
+	jr	nz,.notEqual
+	ld	hl,m_EnemyY	;y座標の比較
+	ld	a,l
+	add	a,b
+	ld	l,a
+	ld	a,e
+	ld	a,[hl]
+	cp	e
+	jr	nz,.notEqual
+	;戦闘に入る
+	ld	a,b
+	ld	[b_EnemyNumber],a
+	AdressLD	BattleLoad, _SceneAdress	
+	jr	.wall		;壁扱いして、終了する
+.notEqual:			;座標が不一致だった場合
+	inc	b
+	ld	a,b
+	cp	4
+	jr	nz,.enemyloop
+
 	;移動を反映する
 	ld	a,d
 	ld	[m_PlayerX],a
@@ -505,6 +553,13 @@ m_MoveEnemy:
 	ld	b,0
 .enemyloop:
 	;移動先に自分の番号の座標はないので、自分の番号比較は行わない
+	ld	hl,m_EnemyType	;存在しない場合、スキップ	
+	ld	a,l
+	add	a,b
+	ld	l,a
+	ld	a,[hl]
+	cp	0
+	jr	z,.notEqual
 	ld	hl,m_EnemyX	;x座標の比較
 	ld	a,l
 	add	a,b
@@ -526,7 +581,19 @@ m_MoveEnemy:
 	ld	a,b
 	cp	4
 	jr	nz,.enemyloop
-
+	;プレイヤーとの接触時、戦闘開始
+	ld	a,[m_PlayerX]	;x座標の比較
+	cp	d
+	jr	nz,.notEqualPlayer
+	ld	a,[m_PlayerY]	;y座標の比較
+	cp	e
+	jr	nz,.notEqualPlayer
+	;戦闘に入る
+	ld	a,c
+	ld	[b_EnemyNumber],a
+	AdressLD	BattleLoad, _SceneAdress	
+	jr	.wall		;壁扱いして、終了する
+.notEqualPlayer:
 	;移動を反映する
 	ld	hl,m_EnemyX
 	ld	a,l
@@ -568,10 +635,15 @@ m_MoveEnemy:
 ;------------------------------------------------
 m_DrawEnemySprite:
 	ld	a,[m_EnemyCount]
-	ld	b,4
+	ld	b,a
 	ld	hl,OAM_BUFFER0 + 16
 .loop:
-	ld	a,[m_EnemyType]
+	ld	de,m_EnemyType
+	ld	a,e
+	add	a,4
+	sub	a,b
+	ld	e,a
+	ld	a,[de]		
 	cp	0
 	jr	z,.blank		;EnemyTypeが0(何もない)の場合、ブランク化処理へ
 	;敵キャラクターが存在する場合
@@ -651,3 +723,26 @@ m_DrawEnemySprite:
 	dec	b
 	jr	nz,.loop
 	ret
+
+m_SetParameter:
+        ;味方のパラメーター表示
+        ld      a,[b_PlayerHP]
+        ld      b,a
+        ld      a,[b_PlayerHP+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,m_PlayerParameterBuffer1
+        call    g_Set5BCDBG
+        ld      a,[b_PlayerATK]
+        ld      b,a
+        ld      a,[b_PlayerATK+1]
+        ld      c,a
+        ld      d,$10
+        ld      hl,m_PlayerParameterBuffer2
+        call    g_Set5BCDBG
+        ld      a,[b_PlayerAS]
+        ld      c,a
+        ld      d,$10
+        ld      hl,m_PlayerParameterBuffer2 + 7
+        call    g_Set3BCDBG
+        ret
