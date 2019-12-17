@@ -56,7 +56,7 @@ begin:
 	ld	sp,$FFFE
 	call	Initialize
 	;最初に呼び出すシーン
-	AdressLD	GameStart, _SceneAdress
+	AdressLD	TitleLoad, _SceneAdress
 	AdressLD	None, _VblankAdress
 	call	ScreenOnVB
 	ei
@@ -88,9 +88,12 @@ VblankMethod:
 
 	include "gb_routine.z80"
 	include "Graphic.z80"
+
+	include "Title.z80"
 	include "GameStart.z80"
 	include "Map.Z80"
 	include "Battle.Z80"
+	include "GameOver.z80"
 
 
 SECTION "Data",ROMX[$4000],BANK[1]

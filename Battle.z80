@@ -5,9 +5,9 @@ BattleLoad:
         ld      [b_EnemyATK],a
         ld      a,30
         ld      [b_EnemyHP+1],a
-        ld      a,50
+        ld      a,5
         ld      [b_EnemyATK+1],a
-        ld      a,20
+        ld      a,60
         ld      [b_EnemyAS],a
 
         ;ASWait初期化
@@ -59,7 +59,7 @@ BattleAwake:
         ld      bc,160
         call    Mem_Set
 
-	ld	a,166
+	ld	a,167
 	ldh	[rWX],a
 	ld	a,143
 	ldh 	[rWY], a
@@ -210,7 +210,7 @@ BattleLose:
         ld      a,[_SceneWait]
         cp      0
         jr      nz,.wait
-        AdressLD	GameStart, _SceneAdress
+        AdressLD	GameOverLoad, _SceneAdress
         AdressLD        None, _VblankAdress       
         ret
 .wait:

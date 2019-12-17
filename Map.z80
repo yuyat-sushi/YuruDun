@@ -42,7 +42,7 @@ MapAwake:
 	ld	hl,_SCRN1
 	call	g_SetTileMap
 	
-	ld	a,8
+	ld	a,7
 	ldh	[rWX],a
 	ld	a,128
 	ldh 	[rWY], a

@@ -1,0 +1,44 @@
+GameOverLoad:
+        ;VRAM操作するため、スクリーンをオフに
+        call    ScreenOff
+        ;グラフィックデータをVRAMに転送する
+	;ゲームオーバー描画
+	ld      bc, 25*16
+        ld      de, _VRAM + $1100
+        ld      hl, _GameOverTile
+        call    LDIR
+
+        xor     a
+        ld      hl,_SCRN0
+        ld      bc,2048
+        call    Mem_Set
+
+	ld	bc,$1003
+	ld	de,_GameOverMap
+	ld	hl,_SCRN0 + 32*7+2
+	call	g_SetTileMap
+	
+	ld	a,167
+	ldh	[rWX],a
+	ld	a,143
+	ldh 	[rWY], a
+
+        ;描画処理終了
+        call    ScreenOnVB
+
+        ld      a,180
+        ld      [_SceneWait],a
+        AdressLD        GameOverUpdate, _SceneAdress
+        ret
+
+GameOverUpdate:
+        ld      a,[_SceneWait]
+        cp      0
+        jr      nz,.wait
+        AdressLD	TitleLoad, _SceneAdress
+        AdressLD        None, _VblankAdress       
+        ret
+.wait:
+        ld      hl,_SceneWait
+        dec     [hl]
+        ret

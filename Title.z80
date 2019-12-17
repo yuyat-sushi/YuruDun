@@ -1,0 +1,47 @@
+TitleLoad:
+        ;VRAM操作するため、スクリーンをオフに
+        call    ScreenOff
+        ;グラフィックデータをVRAMに転送する
+	;ゲームオーバー描画
+	ld      bc, 128*16
+        ld      de, _VRAM + $1000
+        ld      hl, _TitleBGTile
+        call    LDIR
+
+	ld      bc, 109*16
+        ld      de, _VRAM + $0800
+        ld      hl, _TitleBGTile + 128*16
+        call    LDIR
+
+        xor     a
+        ld      hl,_SCRN0
+        ld      bc,2048
+        call    Mem_Set
+
+	ld	bc,$1412
+	ld	de,_TitleMap
+	ld	hl,_SCRN0
+	call	g_SetTileMap
+	
+	ld	a,167
+	ldh	[rWX],a
+	ld	a,143
+	ldh 	[rWY], a
+
+        ;描画処理終了
+        call    ScreenOnVB
+
+        AdressLD        TitleUpdate, _SceneAdress
+        ret
+
+TitleUpdate:
+        ld      a,[_PadDebounce]
+	bit	3,a
+        jr      z,.nopush
+        AdressLD	GameStart, _SceneAdress
+        AdressLD        None, _VblankAdress       
+        ret
+.nopush:
+        ld      hl,_SceneWait
+        dec     [hl]
+        ret
