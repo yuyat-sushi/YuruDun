@@ -36,6 +36,12 @@ MapAwake:
         ld      de,m_MapData
         call    m_SetMapData
 
+	;スプライトリセット
+        xor     a
+        ld      hl,OAM_BUFFER0
+        ld      bc,160
+        call    Mem_Set
+
 	;ステータス描画
 	ld	bc,$1402
 	ld	de,_StatusMap
@@ -306,7 +312,7 @@ m_MovePlayer:
 	ld	a,e
 	ld	[m_PlayerY],a
 	;移動に成功したのでウェイトを追加する
-	ld	a,8
+	ld	a,10
 	ld	[m_PlayerWait],a
 .wall:
 	jr	.end
@@ -314,6 +320,14 @@ m_MovePlayer:
 	;新しいマップにする
 	ld	hl,m_FloorNumber
 	inc	[hl]
+	ld	hl,b_PlayerHP + 1
+	ld	a,[hl]
+	add	a,50
+	ld	[hl],a
+	ld	hl,b_PlayerHP
+	ld	a,[hl]
+	adc	0
+	ld	[hl],a
 	AdressLD	MapLoad, _SceneAdress
 	jr	.end
 .waiting:
@@ -612,7 +626,7 @@ m_MoveEnemy:
 	ld	a,l
 	add	a,c
 	ld	l,a
-	ld	a,32
+	ld	a,40
 	ld	[hl],a
 .wall:
 	jr	.end
@@ -733,6 +747,15 @@ m_SetParameter:
         ld      d,$10
         ld      hl,m_PlayerParameterBuffer1
         call    g_Set5BCDBG
+        ld      a,[m_FloorNumber]
+	inc	a
+        ld      c,a
+        ld      d,$10
+        ld      hl,m_PlayerParameterBuffer1 + 6
+        call    g_Set3BCDBG
+        ld      hl,m_PlayerParameterBuffer1 + 9
+	ld	a,6
+	ld	[hl],a
         ld      a,[b_PlayerATK]
         ld      b,a
         ld      a,[b_PlayerATK+1]

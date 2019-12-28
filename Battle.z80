@@ -4,8 +4,17 @@ BattleLoad:
         ld      [b_EnemyHP],a
         ld      [b_EnemyATK],a
         ld      a,30
+        ld      hl,m_FloorNumber
+        add     a,[hl]
+        add     a,[hl]
         ld      [b_EnemyHP+1],a
-        ld      a,5
+        ld      a,10
+        ld      hl,m_FloorNumber
+        add     a,[hl]
+        add     a,[hl]
+        add     a,[hl]
+        add     a,[hl]
+        add     a,[hl]
         ld      [b_EnemyATK+1],a
         ld      a,60
         ld      [b_EnemyAS],a
@@ -28,7 +37,7 @@ BattleAwake:
         ld      hl, _TextTile
         call    LDIR
         ;背景データ
-	ld      bc, 14*16
+	ld      bc, 25*16
         ld      de, _VRAM + $1200
         ld      hl, _BattleFieldTile
         call    LDIR
@@ -37,27 +46,41 @@ BattleAwake:
         ld      de, _VRAM + $1600
         ld      hl, _EnemyTile1
         call    LDIR
+        ;スプライトアニメ
+        ld      bc, 43*16
+        ld      de, _VRAM
+        ld      hl, _PlayerBattleSprite
+        call    LDIR
         ;背景マップ
-        ld      bc,$140A
+        ld      bc,$1412
         ld      de,_BattleFieldMap
         ld      hl,_SCRN0
         call    g_SetTileMap
         ;ステータスマップ
-        ld      bc,$1408
+        ld      bc,$1405
         ld      de,_BattleStatusMap
-        ld      hl,_SCRN0 + $140
+        ld      hl,_SCRN0 + $1A0
         call    g_SetTileMap
         ;敵マップ
         ld      bc,$0604
         ld      de,_Enemy1Map
-        ld      hl,_SCRN0 + $C2
+        ld      hl,_SCRN0 + $E2
         call    g_SetTileMap
         call    __SetParameter
-        ;スプライト
+
+        ;スプライトリセット
         xor     a
         ld      hl,OAM_BUFFER0
         ld      bc,160
         call    Mem_Set
+
+        ld      a,2
+	ld	b,0
+	ld	c,0
+	ld	d,128
+	ld	e,98
+	ld	hl,$4000
+	call	SpriteAdd  
 
 	ld	a,167
 	ldh	[rWX],a
@@ -121,6 +144,27 @@ BattleUpdate:
 .PlayerASCountDown:
         ld      hl,b_PlayerASWait
         dec     [hl]
+        ld      a,[hl]
+        cp      15
+        jr      nz,.CheckAnimEnd
+        ld      a,2
+	ld	b,0
+	ld	c,0
+	ld	d,128
+	ld	e,98
+	ld	hl,$4080
+	call	SpriteAdd        
+.CheckAnimEnd
+        ld      a,[SP_EndPlay]
+        cp      $FF
+        jr      nz,.endPlayerBattle
+        ld      a,2
+	ld	b,0
+	ld	c,0
+	ld	d,128
+	ld	e,98
+	ld	hl,$4000
+	call	SpriteAdd        
 .endPlayerBattle:
         ;相手の攻撃
         ;ASWait判定
@@ -173,6 +217,7 @@ BattleUpdate:
 .endEnemyBattle:
         ;文字表示の前準備
         call    __SetParameter
+        call    SpriteDraw
         ret
 
 BattleVblank:
@@ -191,6 +236,15 @@ BattleWin:
         ld      a,[_SceneWait]
         cp      0
         jr      nz,.wait
+        ;攻撃力強化
+        ld      de,b_PlayerATK + 1
+        ld      a,[de]
+        add     1
+        ld      [de],a
+        ld      de,b_PlayerATK
+        ld      a,[de]
+        adc     0
+        ld      [de],a        
         ;マップ上のエネミー消去
         ld      a,[b_EnemyNumber]
         ld      hl,m_EnemyType
@@ -198,6 +252,8 @@ BattleWin:
         ld      l,a
         xor     a
         ld      [hl],a
+        ld      b,0
+        call    SpriteDelete
         AdressLD	MapAwake, _SceneAdress
         AdressLD        None, _VblankAdress       
         ret
@@ -210,6 +266,8 @@ BattleLose:
         ld      a,[_SceneWait]
         cp      0
         jr      nz,.wait
+        ld      b,0
+        call    SpriteDelete
         AdressLD	GameOverLoad, _SceneAdress
         AdressLD        None, _VblankAdress       
         ret

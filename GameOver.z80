@@ -23,6 +23,12 @@ GameOverLoad:
 	ld	a,143
 	ldh 	[rWY], a
 
+        ;スプライトリセット
+        xor     a
+        ld      hl,OAM_BUFFER0
+        ld      bc,160
+        call    Mem_Set
+
         ;描画処理終了
         call    ScreenOnVB
 

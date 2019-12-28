@@ -2,7 +2,12 @@ TitleLoad:
         ;VRAM操作するため、スクリーンをオフに
         call    ScreenOff
         ;グラフィックデータをVRAMに転送する
-	;ゲームオーバー描画
+        ;スプライトデータ
+        ld      bc, 48*16
+        ld      de, _VRAM
+        ld      hl, _TitleCrystal
+        call    LDIR
+        ;タイトル描画
 	ld      bc, 128*16
         ld      de, _VRAM + $1000
         ld      hl, _TitleBGTile
@@ -28,6 +33,13 @@ TitleLoad:
 	ld	a,143
 	ldh 	[rWY], a
 
+        ld      a,2
+	ld	b,0
+	ld	c,0
+	ld	d,88
+	ld	e,138
+	ld	hl,$4300
+	call	SpriteAdd        
         ;描画処理終了
         call    ScreenOnVB
 
@@ -38,10 +50,11 @@ TitleUpdate:
         ld      a,[_PadDebounce]
 	bit	3,a
         jr      z,.nopush
+        ld      b,0
+        call    SpriteDelete
         AdressLD	GameStart, _SceneAdress
         AdressLD        None, _VblankAdress       
         ret
 .nopush:
-        ld      hl,_SceneWait
-        dec     [hl]
+        call    SpriteDraw
         ret

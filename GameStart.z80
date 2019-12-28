@@ -1,8 +1,8 @@
 GameStart:
         xor     a
-        ld      [m_FloorNumber],a
         ld      [b_PlayerHP],a
-        ld      [b_PlayerATK],a      
+        ld      [b_PlayerATK],a
+        ld      [m_FloorNumber],a
 
         ld      a,100
         ld      [b_PlayerHP+1],a
